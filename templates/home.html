@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Score Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #006ae6 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .form-title h2 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .form-title p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #0099ff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 153, 255, 0.25);
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #0099ff;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #006ae6 100%);
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 153, 255, 0.4);
+            color: white;
+        }
+        
+        .btn-reset {
+            flex: 1;
+            background: #e0e0e0;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .btn-reset:hover {
+            background: #d0d0d0;
+        }
+        
+        .form-text {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-title">
+            <h2>📊 Student Score Prediction</h2>
+            <p>Fill in your information to get a score prediction</p>
+        </div>
+
+        <form id="predictionForm" method="POST" action="/predict">
+            <!-- Demographic Information Section -->
+            <div class="form-section">
+                <div class="section-title">📋 Personal Information</div>
+                
+                <div class="form-group">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="">-- Select Gender --</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="race" class="form-label">Race/Ethnicity</label>
+                    <select class="form-select" id="race" name="race_ethnicity" required>
+                        <option value="">-- Select Race/Ethnicity --</option>
+                        <option value="group A">Group A</option>
+                        <option value="group B">Group B</option>
+                        <option value="group C">Group C</option>
+                        <option value="group D">Group D</option>
+                        <option value="group E">Group E</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="parental_education" class="form-label">Parental Level of Education</label>
+                    <select class="form-select" id="parental_education" name="parental_level_of_education" required>
+                        <option value="">-- Select Education Level --</option>
+                        <option value="some high school">Some High School</option>
+                        <option value="high school">High School</option>
+                        <option value="some college">Some College</option>
+                        <option value="associate's degree">Associate's Degree</option>
+                        <option value="bachelor's degree">Bachelor's Degree</option>
+                        <option value="master's degree">Master's Degree</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Academic Information Section -->
+            <div class="form-section">
+                <div class="section-title">🎓 Academic Information</div>
+                
+                <div class="form-group">
+                    <label for="lunch" class="form-label">Lunch Type</label>
+                    <select class="form-select" id="lunch" name="lunch" required>
+                        <option value="">-- Select Lunch Type --</option>
+                        <option value="standard">Standard</option>
+                        <option value="free/reduced">Free/Reduced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="test_prep" class="form-label">Test Preparation Course</label>
+                    <select class="form-select" id="test_prep" name="test_preparation_course" required>
+                        <option value="">-- Select Preparation Status --</option>
+                        <option value="none">None</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Score Information Section -->
+            <div class="form-section">
+                <div class="section-title">📝 Test Scores</div>
+                
+                <div class="form-group">
+                    <label for="reading_score" class="form-label">Reading Score</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="reading_score" 
+                           name="reading_score" 
+                           min="0" 
+                           max="100" 
+                           placeholder="Enter reading score (0-100)"
+                           required>
+                    <div class="form-text">Range: 0-100</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="writing_score" class="form-label">Writing Score</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="writing_score" 
+                           name="writing_score" 
+                           min="0" 
+                           max="100" 
+                           placeholder="Enter writing score (0-100)"
+                           required>
+                    <div class="form-text">Range: 0-100</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit">🚀 Predict Score</button>
+                <button type="reset" class="btn-reset">🔄 Clear Form</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            const readingScore = parseInt(document.getElementById('reading_score').value);
+            const writingScore = parseInt(document.getElementById('writing_score').value);
+            
+            if (readingScore < 0 || readingScore > 100) {
+                e.preventDefault();
+                alert('Reading score must be between 0 and 100');
+                return false;
+            }
+            
+            if (writingScore < 0 || writingScore > 100) {
+                e.preventDefault();
+                alert('Writing score must be between 0 and 100');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
