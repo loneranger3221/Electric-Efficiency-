@@ -3,4 +3,6 @@ pandas
 scikit-learn
 dill
 Flask
+openpyxl
+xgboost
 #-e .

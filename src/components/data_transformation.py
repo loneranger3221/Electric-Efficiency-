@@ -1,107 +1,90 @@
 import sys
-import os
-from src.exception import CustomException
-from src.logger import logging
-from dataclasses import dataclass 
 
-
-from src.utils import save_object
-
-
-'''main packages'''
 import pandas as pd
-import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from src.exception import CustomException
+from src.logger import logging
 
-'''Defining configurations for data transformation'''
-@dataclass
-class DataTransformationConfig:
-    preprocessor_obj_file_path = os.path.join('artifacts', 'preprocessor.pkl')
-    
+
 class DataTransformation:
-    def __init__(self):
-        self.data_transformation_config = DataTransformationConfig()
-        
+    def __init__(self, house_label="A"):
+        self.house_label = house_label.upper()
+
     def get_data_transformer_object(self):
-        '''Step-1 create the numerical and categorical pipeline for data transformation'''
         try:
-            numerical_columns = ['writing score', 'reading score']
-            categorical_columns =[
-                'gender',
-                'race/ethnicity',
-                'parental level of education',
-                'lunch',
-                'test preparation course'
+            numerical_columns = [
+                f"Total_Electrical_houses_label_{self.house_label}",
+                "hour",
+                "month",
             ]
-            
-            num_pipeline= Pipeline(
+            categorical_columns = ["day_of_week", "is_weekend"]
+
+            numerical_pipeline = Pipeline(
                 steps=[
-                    ('imputer', SimpleImputer(strategy='median')),
-                    ('scaler', StandardScaler())
+                    ("imputer", SimpleImputer(strategy="median")),
+                    ("scaler", StandardScaler()),
                 ]
             )
-            cat_pipeline = Pipeline(
+            categorical_pipeline = Pipeline(
                 steps=[
-                    ('imputer', SimpleImputer(strategy='most_frequent')),
-                    ('one_hot_encoder', OneHotEncoder()),
-                    ('scaler', StandardScaler(with_mean=False))
+                    ("imputer", SimpleImputer(strategy="most_frequent")),
+                    ("one_hot_encoder", OneHotEncoder(handle_unknown="ignore")),
+                    ("scaler", StandardScaler(with_mean=False)),
                 ]
             )
-            logging.info("categorical and numerical pipeline created")
-            
-            '''Step-2 Now we will combine both the pipelines using column transformer'''
-            preprocessor = ColumnTransformer(
-                [
-                    ('num_pipeline', num_pipeline, numerical_columns),
-                    ('cat_pipeline', cat_pipeline, categorical_columns)
+            return ColumnTransformer(
+                transformers=[
+                    ("num_pipeline", numerical_pipeline, numerical_columns),
+                    ("cat_pipeline", categorical_pipeline, categorical_columns),
                 ]
             )
-            
-            return preprocessor
-        except Exception as e:
-            logging.info("Exception occured in data transformation")
-            raise CustomException(e, sys)
-        
-    
+        except Exception as error:
+            raise CustomException(error, sys) from error
+
     def initiate_data_transformation(self, train_path, test_path):
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
-            logging.info("Read train and test data completed")
-            
-            logging.info("Obtaining preprocessor object")
-            preprocessor_obj = self.get_data_transformer_object()
-            
-            target_column_name = 'math score'
-            
-            input_feature_train_df = train_df.drop(columns=[target_column_name], axis=1)
-            target_feature_train_df = train_df[target_column_name]
-            
-            input_feature_test_df = test_df.drop(columns=[target_column_name], axis=1)
-            target_feature_test_df = test_df[target_column_name]
-            
-            logging.info("Applying preprocessing object on training and testing data")
-            
-            input_feature_train_arr = preprocessor_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr = preprocessor_obj.transform(input_feature_test_df)
-            
-            '''Now we will concatenate the transformed input features and target feature'''
-            train_arr = np.c_[input_feature_train_arr, np.array(target_feature_train_df)]
-            test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
-            
-            logging.info("Saved preprocessing object")
-            
-            save_object(
-                file_path = self.data_transformation_config.preprocessor_obj_file_path,
-                obj = preprocessor_obj
+            target_column = f"Total_Heat_houses_label_{self.house_label}"
+            required_columns = {
+                "timestamp",
+                f"Total_Electrical_houses_label_{self.house_label}",
+                "hour",
+                "month",
+                "day_of_week",
+                "is_weekend",
+                target_column,
+            }
+            for name, dataframe in (("train", train_df), ("test", test_df)):
+                missing_columns = required_columns.difference(dataframe.columns)
+                if missing_columns:
+                    raise ValueError(f"{name} data is missing columns: {sorted(missing_columns)}")
+
+            feature_columns = [
+                f"Total_Electrical_houses_label_{self.house_label}",
+                "hour",
+                "month",
+                "day_of_week",
+                "is_weekend",
+            ]
+            train_features = train_df[feature_columns]
+            test_features = test_df[feature_columns]
+            train_target = train_df[target_column].to_numpy()
+            test_target = test_df[target_column].to_numpy()
+            test_timestamps = test_df["timestamp"].astype(str).to_numpy()
+
+            logging.info("Prepared raw model features for label %s", self.house_label)
+            return (
+                train_features,
+                train_target,
+                test_features,
+                test_target,
+                test_timestamps,
+                self.get_data_transformer_object(),
             )
-            '''The above func will be written in utils.py file'''
-            
-            return (train_arr, test_arr, self.data_transformation_config.preprocessor_obj_file_path)
-        except Exception as e:
-            logging.info("Exception occured in initiate_data_transformation")
-            raise CustomException(e, sys)
+        except Exception as error:
+            raise CustomException(error, sys) from error
